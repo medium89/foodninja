@@ -1,58 +1,229 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Генератор ссылок
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Веб-приложение на Laravel с личным кабинетом на Filament v3.
 
-## About Laravel
+Приложение позволяет:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- регистрироваться и входить в аккаунт;
+- создавать короткие ссылки;
+- переходить по короткой ссылке на оригинальный URL;
+- записывать IP-адрес и дату каждого перехода;
+- смотреть список своих ссылок;
+- смотреть статистику переходов по каждой ссылке;
+- удалять свои ссылки.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Стек
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Laravel
+- Filament v3
+- Laravel Breeze
+- MySQL
+- Docker / Laravel Sail
 
-## Learning Laravel
+## Требования
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+На компьютере должны быть установлены:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Docker
+- Docker Compose
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+PHP, Composer, Node.js и MySQL локально ставить не обязательно, они запускаются в Docker.
 
-## Agentic Development
+## Установка
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Клонировать проект и перейти в папку:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <repository-url>
+cd project
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Скопировать файл окружения:
 
-## Contributing
+```bash
+cp .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Установить зависимости Composer:
 
-## Code of Conduct
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php85-composer:latest \
+    composer install --ignore-platform-reqs
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Запустить контейнеры:
 
-## Security Vulnerabilities
+```bash
+docker compose up -d
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Сгенерировать ключ приложения:
 
-## License
+```bash
+docker compose exec laravel.test php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Установить frontend-зависимости и собрать assets:
+
+```bash
+docker compose exec laravel.test npm install
+docker compose exec laravel.test npm run build
+```
+
+Запустить миграции:
+
+```bash
+docker compose exec laravel.test php artisan migrate
+```
+
+## Настройка .env
+
+Основные параметры для локального запуска:
+
+```env
+APP_NAME="Генератор ссылок"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+APP_PORT=8000
+
+APP_LOCALE=ru
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=ru_RU
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=sail
+DB_PASSWORD=password
+
+FORWARD_DB_PORT=3307
+```
+
+Пояснение по портам:
+
+- приложение открывается на `http://localhost:8000`;
+- MySQL внутри Docker работает на `3306`;
+- с компьютера MySQL доступен на `localhost:3307`.
+
+## Демо-данные
+
+Чтобы заполнить базу демонстрационными пользователями, ссылками и кликами:
+
+```bash
+docker compose exec laravel.test php artisan db:seed
+```
+
+Если нужно полностью пересоздать базу и сразу заполнить демо-данными:
+
+```bash
+docker compose exec laravel.test php artisan migrate:fresh --seed
+```
+
+## Демо-пользователь
+
+После запуска сидера можно войти под готовым аккаунтом:
+
+```text
+email: demo@example.com
+password: password
+```
+
+У Demo-пользователя уже есть несколько коротких ссылок и история переходов, чтобы можно было сразу проверить интерфейс статистики.
+
+## Основные URL
+
+Главная страница:
+
+```text
+http://localhost:8000
+```
+
+Регистрация:
+
+```text
+http://localhost:8000/register
+```
+
+Вход:
+
+```text
+http://localhost:8000/login
+```
+
+Filament-кабинет:
+
+```text
+http://localhost:8000/admin
+```
+
+Список коротких ссылок:
+
+```text
+http://localhost:8000/admin/short-links
+```
+
+## Короткие ссылки
+
+Короткие ссылки работают через публичный маршрут:
+
+```text
+http://localhost:8000/{code}
+```
+
+Например, после запуска сидера доступны ссылки:
+
+```text
+http://localhost:8000/laravel
+http://localhost:8000/panel3
+http://localhost:8000/offer1
+```
+
+При переходе по короткой ссылке приложение:
+
+1. находит запись по коду;
+2. сохраняет IP-адрес и дату перехода;
+3. перенаправляет пользователя на оригинальный URL.
+
+## Полезные команды
+
+Запустить контейнеры:
+
+```bash
+docker compose up -d
+```
+
+Остановить контейнеры:
+
+```bash
+docker compose down
+```
+
+Запустить миграции:
+
+```bash
+docker compose exec laravel.test php artisan migrate
+```
+
+Запустить сидер:
+
+```bash
+docker compose exec laravel.test php artisan db:seed
+```
+
+Запустить тесты:
+
+```bash
+docker compose exec laravel.test php artisan test
+```
+
+Очистить кэш конфигурации:
+
+```bash
+docker compose exec laravel.test php artisan config:clear
+```
