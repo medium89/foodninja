@@ -3,9 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShortLinkResource\Pages;
+use App\Filament\Resources\ShortLinkResource\RelationManagers;
 use App\Models\ShortLink;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -73,6 +76,9 @@ class ShortLinkResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Статистика')
+                    ->icon('heroicon-o-chart-bar'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -80,6 +86,27 @@ class ShortLinkResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\TextEntry::make('original_url')
+                    ->label('Оригинальный URL')
+                    ->url(fn (ShortLink $record): string => $record->original_url)
+                    ->openUrlInNewTab()
+                    ->columnSpanFull(),
+                Infolists\Components\TextEntry::make('code')
+                    ->label('Короткая ссылка')
+                    ->formatStateUsing(fn (string $state): string => route('links.redirect', $state))
+                    ->url(fn (ShortLink $record): string => route('links.redirect', $record->code))
+                    ->openUrlInNewTab()
+                    ->columnSpanFull(),
+                Infolists\Components\TextEntry::make('clicks_count')
+                    ->label('Всего кликов')
+                    ->state(fn (ShortLink $record): int => $record->clicks()->count()),
             ]);
     }
 
@@ -92,7 +119,7 @@ class ShortLinkResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ClicksRelationManager::class,
         ];
     }
 
@@ -101,6 +128,7 @@ class ShortLinkResource extends Resource
         return [
             'index' => Pages\ListShortLinks::route('/'),
             'create' => Pages\CreateShortLink::route('/create'),
+            'view' => Pages\ViewShortLink::route('/{record}'),
             'edit' => Pages\EditShortLink::route('/{record}/edit'),
         ];
     }
