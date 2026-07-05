@@ -9,8 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <a href="{{ route('links.index') }}" class="text-indigo-600 hover:text-indigo-900">
-                        {{ __('Go to my links') }}
+                    <a href="{{ url('/admin/short-links') }}" class="text-indigo-600 hover:text-indigo-900">
+                        {{ __('Перейти к ссылкам') }}
                     </a>
                 </div>
             </div>

@@ -15,8 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('links.index')" :active="request()->routeIs('links.*')">
-                        {{ __('Links') }}
+                    <x-nav-link :href="url('/admin/short-links')" :active="request()->is('admin/short-links*')">
+                        {{ __('Ссылки') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -73,8 +73,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('links.index')" :active="request()->routeIs('links.*')">
-                {{ __('Links') }}
+            <x-responsive-nav-link :href="url('/admin/short-links')" :active="request()->is('admin/short-links*')">
+                {{ __('Ссылки') }}
             </x-responsive-nav-link>
         </div>
 
